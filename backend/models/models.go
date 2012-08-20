@@ -2,8 +2,8 @@ package models
 
 import (
 	"errors"
-	"os"
 
+	"appengine"
 	"appengine/datastore"
 )
 
@@ -21,14 +21,14 @@ type Cruiser struct {
 	Placeholder string
 }
 
-type Dreadnaught struct {
+type Dreadnought struct {
 	Placeholder string
 }
 
 type ShipSet struct {
 	Interceptors []Interceptor
-	Cruisers     []Cruisers
-	Dreadnaughts []Dreadnaught
+	Cruisers     []Cruiser
+	Dreadnoughts []Dreadnought
 }
 
 type System struct {
@@ -59,7 +59,7 @@ func GetGameState(c appengine.Context, k *datastore.Key) (*GameState, error) {
 		return queryFirstAvailableGameState(c)
 	}
 	gameState := &GameState{}
-	err := datastore.get(c, k, gameState)
+	err := datastore.Get(c, k, gameState)
 	if err != nil {
 		return nil, err
 	}
@@ -67,15 +67,16 @@ func GetGameState(c appengine.Context, k *datastore.Key) (*GameState, error) {
 }
 
 func queryFirstAvailableGameState(c appengine.Context) (*GameState, error) {
-	gameStates = make([]GameState, 0)
+	gameStates := make([]GameState, 0)
 	q := datastore.NewQuery(gameStateType).Limit(1)
 	_, err := q.GetAll(c, gameStates)
 	if err != nil {
 		return nil, err
 	}
+	c.Infof("game state: %+v", gameStates)
 	if len(gameStates) == 1 {
-		return &gameStates[0]
+		return &gameStates[0], nil
 	}
 	// Couldn't find any games, return nil, nil.
-	return nil, errorrs.New("No available games!")
+	return nil, errors.New("No available games!")
 }

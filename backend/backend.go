@@ -1,11 +1,11 @@
 package backend
 
 import (
-	"http"
+	"net/http"
 
-	"backend/hanlders"
+	"backend/handlers"
 )
 
 func init() {
-	http.HandleFunc("/", handlers.GameState)
+	http.HandleFunc("/s/getGameState", handlers.GameState)
 }
